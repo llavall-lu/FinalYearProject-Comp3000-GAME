@@ -12,6 +12,7 @@ public class Controller : MonoBehaviour
     
     [SerializeField] private TMP_Text currencyText;
     [SerializeField] private TMP_Text currencyClickPowerText;
+    [SerializeField] private TMP_Text currencyPerSecond;
 
     public double ClickPower()
     {
@@ -24,6 +25,18 @@ public class Controller : MonoBehaviour
         return total;
     }
     
+    public double CurrencyPerSecond()
+    {
+        double total = 0;
+        for (int i = 0; i < gameData.productionUpgradeLevel.Count; i++)
+        {
+            total += UpgradesManager.instance.productionUpgradesBasePower[i] * gameData.productionUpgradeLevel[i];
+        }
+
+        return total;
+    }
+
+    
     private void Start() 
         {
             gameData = new GameData();
@@ -31,9 +44,13 @@ public class Controller : MonoBehaviour
         }
     private void Update()
         {
-            currencyText.text = gameData.currency + " Currency";
-            currencyClickPowerText.text = "+" + ClickPower() + " Currency";
-            
+            currencyText.text = $"{gameData.currency:F2} Currency";
+            currencyClickPowerText.text = $"+{ClickPower()} Currency";
+            currencyPerSecond.text = $"{CurrencyPerSecond():F2}/s";
+            // using interpolation to clean up messy code
+
+            Controller.instance.gameData.currency += CurrencyPerSecond() * Time.deltaTime;
+
         } 
     public void AddCurrency()
         {
