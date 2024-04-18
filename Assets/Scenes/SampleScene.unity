@@ -954,9 +954,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 699b7159f2eb57847a505bf6da8c9184, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameData:
+    currency: 0
+    clickUpgradeLevel: 00000000000000000000000000000000
+    productionUpgradeLevel: 00000000000000000000000000000000
   currencyText: {fileID: 1493484863}
   currencyClickPowerText: {fileID: 1631208058}
   currencyPerSecond: {fileID: 273125199}
+  SaveTime: 0
 --- !u!4 &868670718
 Transform:
   m_ObjectHideFlags: 0
@@ -1731,9 +1736,11 @@ MonoBehaviour:
   clickUpgradeBaseCost: []
   clickUpgradeCostMulti: []
   clickUpgradesBasePower: []
+  clickUpgradesUnlocked: []
   productionUpgradeBaseCost: []
   productionUpgradeCostMulti: []
   productionUpgradesBasePower: []
+  productionUpgradesUnlocked: []
 --- !u!1 &1788765671
 GameObject:
   m_ObjectHideFlags: 0

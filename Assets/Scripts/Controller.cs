@@ -36,12 +36,18 @@ public class Controller : MonoBehaviour
         return total;
     }
 
-    
-    private void Start() 
-        {
-            gameData = new GameData();
+    private const string dataFileName = "PlayerData_KyberConquest";
+    private void Start()
+    {
+        gameData = SaveSystem.SaveExists(FileName: dataFileName)
+            ? SaveSystem.LoadData<GameData>(fileName: dataFileName)
+            : new GameData();
+        
             UpgradesManager.instance.StartUpgradeManager();
         }
+
+
+    public float SaveTime;
     private void Update()
         {
             currencyText.text = $"{gameData.currency:F2} Currency";
@@ -50,6 +56,13 @@ public class Controller : MonoBehaviour
             // using interpolation to clean up messy code
 
             Controller.instance.gameData.currency += CurrencyPerSecond() * Time.deltaTime;
+            
+            SaveTime += Time.deltaTime * (1 / Time.timeScale);
+            if (SaveTime >= 15)
+            {
+                SaveSystem.SaveData(gameData, dataFileName);
+                SaveTime = 0;
+            }
 
         } 
     public void AddCurrency()
