@@ -31,10 +31,12 @@ public class UpgradesManager : MonoBehaviour
     public double[] clickUpgradeBaseCost;
     public double[] clickUpgradeCostMulti;
     public double[] clickUpgradesBasePower;
+    public double[] clickUpgradesUnlocked;
 
     public double[] productionUpgradeBaseCost;
     public double[] productionUpgradeCostMulti;
     public double[] productionUpgradesBasePower;
+    public double[] productionUpgradesUnlocked;
     
     public void StartUpgradeManager()
     {
@@ -52,15 +54,18 @@ public class UpgradesManager : MonoBehaviour
         clickUpgradeBaseCost = new double[] { 10, 50, 100, 1000 };
         clickUpgradeCostMulti = new double[] { 1.25, 1.35, 1.55, 2 };
         clickUpgradesBasePower = new double[] { 1, 5, 10, 25 };
+        clickUpgradesUnlocked = new double[] { 0, 25, 50, 500 }; // Thresholds to unlock upgrades
         
         productionUpgradeBaseCost = new double[] { 25, 100, 1000, 10000 };
         productionUpgradeCostMulti = new double[] { 1.5, 1.75, 2, 3 };
         productionUpgradesBasePower = new double[] { 1, 2, 10, 100 };
+        productionUpgradesUnlocked = new double[] { 50, 500, 2500, 15000 }; // Thresholds to unlock upgrades
 
         for (int i = 0; i < Controller.instance.gameData.clickUpgradeLevel.Count; i++)
         {
             Upgrades upgrade = Instantiate(clickUpgradePrefab, clickUpgradesPanel);
             upgrade.UpgradeID = i;
+            upgrade.gameObject.SetActive(false);
             clickUpgrades.Add(upgrade);
         }
 
@@ -68,16 +73,30 @@ public class UpgradesManager : MonoBehaviour
         {
             Upgrades upgrade = Instantiate(productionUpgradesPrefab, productionUpgradesPanel);
             upgrade.UpgradeID = i;
+            upgrade.gameObject.SetActive(false);
             productionUpgrades.Add(upgrade);
         }
 
         clickUpgradesScroll.normalizedPosition = new Vector2(x: 0, y: 0);
         productionUpgradesScroll.normalizedPosition = new Vector2(x: 0, y: 0);
-        UpdateUI("click");
-        UpdateUI(type:"production");
+        UpdateUpgradeUI("click");
+        UpdateUpgradeUI(type:"production");
     }
 
-    public void UpdateUI(string type, int UpgradeID = -1)
+    public void Update() // Reveals upgrades when you hit certain thresholds 
+    {
+        for (var i = 0; i < clickUpgrades.Count; i++)
+            if (!clickUpgrades[i].gameObject.activeSelf) 
+                clickUpgrades[i].gameObject.SetActive(Controller.instance.gameData.currency >= clickUpgradesUnlocked[i]);
+        
+        for (var i = 0; i < productionUpgrades.Count; i++)
+            if (!productionUpgrades[i].gameObject.activeSelf) 
+                productionUpgrades[i].gameObject.SetActive(Controller.instance.gameData.currency >= productionUpgradesUnlocked[i]);
+    
+    }
+
+
+    public void UpdateUpgradeUI(string type, int UpgradeID = -1)
     {
 
         switch (type)
@@ -136,7 +155,7 @@ public class UpgradesManager : MonoBehaviour
                 Controller.instance.gameData.currency -= UpgradeCost(type, UpgradeID);
                 upgradeLevels[UpgradeID] += 1;
             }
-            UpdateUI(type, UpgradeID);
+            UpdateUpgradeUI(type, UpgradeID);
         }
     }
 }
