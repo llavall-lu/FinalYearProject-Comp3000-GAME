@@ -37,7 +37,7 @@ public class Controller : MonoBehaviour
     }
 
     private const string dataFileName = "PlayerData_KyberConquest";
-    private void Start()
+    public void Start()
     {
         gameData = SaveSystem.SaveExists(FileName: dataFileName)
             ? SaveSystem.LoadData<GameData>(fileName: dataFileName)
@@ -60,11 +60,17 @@ public class Controller : MonoBehaviour
             SaveTime += Time.deltaTime * (1 / Time.timeScale);
             if (SaveTime >= 15)
             {
-                SaveSystem.SaveData(gameData, dataFileName);
+                Save();
                 SaveTime = 0;
             }
 
-        } 
+        }
+
+    public void Save()
+    {
+        SaveSystem.SaveData(gameData, dataFileName);
+    }
+    
     public void AddCurrency()
         {
             gameData.currency += ClickPower();
