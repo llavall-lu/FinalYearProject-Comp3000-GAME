@@ -6,12 +6,14 @@ using TMPro;
 
 public class Upgrades : MonoBehaviour
 {
+    
     public int UpgradeID;
     public Image UpgradeButton;
     public TMP_Text LevelText;
     public TMP_Text NameText;
     public TMP_Text CostText;
+    public TMP_Text TitleText;
 
-    public void BuyClickUpgrades() => UpgradesManager.instance.BuyUpgrade(type:"click", UpgradeID);
-    public void BuyProductionUpgrades() => UpgradesManager.instance.BuyUpgrade(type:"production", UpgradeID);
+    public void BuyClickUpgrades() => UpgradesManager.upgradeManager.BuyUpgrade(type:"click", UpgradeID);
+    public void BuyProductionUpgrades() => UpgradesManager.upgradeManager.BuyUpgrade(type:"production", UpgradeID);
 }

@@ -11,6 +11,8 @@ public class GameData
 
     public List<int> clickUpgradeLevel;
     public List<int> productionUpgradeLevel;
+
+    public int notation;
     
     public GameData()
     {
@@ -18,6 +20,8 @@ public class GameData
         
         clickUpgradeLevel = new int[4].ToList();
         //clickUpgradeLevel = Methods.CreateList<double>(capacity: 4);
-        productionUpgradeLevel = new int[4].ToList();
+        productionUpgradeLevel = new int[5].ToList();
+
+        notation = 0;
     }
 }

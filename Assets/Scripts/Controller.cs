@@ -1,12 +1,14 @@
 using System;
 using UnityEngine;
 using TMPro;
+using static Settings;
+using static UpgradesManager;
 
 public class Controller : MonoBehaviour
 {
 
-    public static Controller instance; 
-    private void Awake() => instance = this;
+    public static Controller controller; 
+    private void Awake() => controller = this;
     
     public GameData gameData;
     
@@ -19,7 +21,7 @@ public class Controller : MonoBehaviour
         double total = 1;
         for (int i = 0; i < gameData.clickUpgradeLevel.Count; i++)
         {
-            total += UpgradesManager.instance.clickUpgradesBasePower[i] * gameData.clickUpgradeLevel[i];
+            total += upgradeManager.clickUpgradesBasePower[i] * gameData.clickUpgradeLevel[i];
         }
 
         return total;
@@ -30,7 +32,7 @@ public class Controller : MonoBehaviour
         double total = 0;
         for (int i = 0; i < gameData.productionUpgradeLevel.Count; i++)
         {
-            total += UpgradesManager.instance.productionUpgradesBasePower[i] * gameData.productionUpgradeLevel[i];
+            total += upgradeManager.productionUpgradesBasePower[i] * gameData.productionUpgradeLevel[i];
         }
 
         return total;
@@ -43,19 +45,20 @@ public class Controller : MonoBehaviour
             ? SaveSystem.LoadData<GameData>(fileName: dataFileName)
             : new GameData();
         
-            UpgradesManager.instance.StartUpgradeManager();
+            upgradeManager.StartUpgradeManager();
+            settings.StartSettings();
         }
 
 
     public float SaveTime;
     private void Update()
         {
-            currencyText.text = $"{gameData.currency:F2} Currency";
-            currencyClickPowerText.text = $"+{ClickPower()} Currency";
-            currencyPerSecond.text = $"{CurrencyPerSecond():F2}/s";
+            currencyText.text = $"{gameData.currency:F0} Infected Devices";
+            currencyClickPowerText.text = $"+{ClickPower()} Infected Devices";
+            currencyPerSecond.text = $"{CurrencyPerSecond():F0}/s";
             // using interpolation to clean up messy code
 
-            Controller.instance.gameData.currency += CurrencyPerSecond() * Time.deltaTime;
+            Controller.controller.gameData.currency += CurrencyPerSecond() * Time.deltaTime;
             
             SaveTime += Time.deltaTime * (1 / Time.timeScale);
             if (SaveTime >= 15)

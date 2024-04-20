@@ -1,17 +1,12 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UpgradesManager : MonoBehaviour
 {
-    
-    
-    public static UpgradesManager instance;
-    private void Awake() => instance = this;
-
+    public static UpgradesManager upgradeManager;
+    private void Awake() => upgradeManager = this;
 
     public List<Upgrades> clickUpgrades;
     public Upgrades clickUpgradePrefab;
@@ -24,44 +19,75 @@ public class UpgradesManager : MonoBehaviour
 
     public ScrollRect productionUpgradesScroll;
     public Transform productionUpgradesPanel;
-    
+
     public string[] clickUpgradeName;
     public string[] productionUpgradeName;
-    
+    public string[] upgradeTitles; 
+    public string[] upgradePopupText; 
+
     public double[] clickUpgradeBaseCost;
     public double[] clickUpgradeCostMulti;
     public double[] clickUpgradesBasePower;
     public double[] clickUpgradesUnlocked;
+    private bool[] clickUpgradesAppeared;
 
     public double[] productionUpgradeBaseCost;
     public double[] productionUpgradeCostMulti;
     public double[] productionUpgradesBasePower;
     public double[] productionUpgradesUnlocked;
-    
+    private bool[] productionUpgradesAppeared;
+
+    public GameObject upgradePopupPrefab; 
+
     public void StartUpgradeManager()
     {
-        Methods.UpgradeCheck(Controller.instance.gameData.clickUpgradeLevel, length:4);
-        
-        clickUpgradeName = new[] { "Click Power +1", "Click Power +5", "Click Power +10", "Click Power +25" };
+        Methods.UpgradeCheck(Controller.controller.gameData.clickUpgradeLevel, length: 4);
+
+        clickUpgradeName = new[] { "Infect Device +1", "Infect Device +5", "Infect Device +10", "Infect Device +20" };
         productionUpgradeName = new[]
         {
-            "+1 Currency/s",
-            "+2 Currency/s",
-            "+5 Currency/s",
-            "+25 Currency/s"
+            "+1 Infected Devices/s",
+            "+3 Infected Devices/s",
+            "+7 Infected Devices/s",
+            "+15 Infected Devices/s",
+            "+30 Infected Devices/s" 
+        };
+
+        
+        upgradeTitles = new[] 
+        {
+            "Trojan",
+            "Worm",
+            "Rootkit",
+            "Fileless Malware",
+            "Botnet" 
         };
         
-        clickUpgradeBaseCost = new double[] { 10, 50, 100, 1000 };
-        clickUpgradeCostMulti = new double[] { 1.25, 1.35, 1.55, 2 };
-        clickUpgradesBasePower = new double[] { 1, 5, 10, 25 };
-        clickUpgradesUnlocked = new double[] { 0, 25, 50, 500 }; // Thresholds to unlock upgrades
-        
-        productionUpgradeBaseCost = new double[] { 25, 100, 1000, 10000 };
-        productionUpgradeCostMulti = new double[] { 1.5, 1.75, 2, 3 };
-        productionUpgradesBasePower = new double[] { 1, 2, 10, 100 };
-        productionUpgradesUnlocked = new double[] { 50, 500, 2500, 15000 }; // Thresholds to unlock upgrades
+    
+        upgradePopupText = new[]
+        {
+            "This upgrade introduces a Trojan, a type of malware that masquerades as legitimate software. Trojans can steal sensitive information or provide attackers unauthorized access to the infected system.",
+            "This upgrade introduces a Worm, a self-replicating malware that spreads through networks by exploiting vulnerabilities in computer systems.",
+            "This upgrade introduces a Rootkit, a type of malware designed to conceal itself and other malicious software on a system, granting attackers privileged access.",
+            "This upgrade introduces a Fileless Malware, operating in system memory without leaving traces on the hard drive, often used for stealthy attacks like data theft.",
+            "This upgrade introduces a Botnet, a network of infected computers controlled by attackers, commonly utilized for large-scale attacks and data theft."
+        };
 
-        for (int i = 0; i < Controller.instance.gameData.clickUpgradeLevel.Count; i++)
+
+        clickUpgradeBaseCost = new double[] { 10, 50, 150, 300 };
+        clickUpgradeCostMulti = new double[] { 1.25, 1.35, 1.5, 1.7 };
+        clickUpgradesBasePower = new double[] { 1, 5, 10, 20 };
+        clickUpgradesUnlocked = new double[] { 0, 25, 50, 1000 }; // Thresholds to unlock upgrades
+        clickUpgradesAppeared = new bool[clickUpgradeName.Length];
+
+        productionUpgradeBaseCost = new double[] { 25, 100, 500, 2000, 10000 }; 
+        productionUpgradeCostMulti = new double[] { 1.5, 1.75, 2.2, 2.8, 3.5 }; 
+        productionUpgradesBasePower = new double[] { 1, 3, 7, 15, 30 }; 
+        productionUpgradesUnlocked = new double[] { 50, 500, 1500, 5000, 20000 }; // Thresholds to unlock upgrades
+        productionUpgradesAppeared = new bool[productionUpgradeName.Length];
+    
+        // Instantiate click upgrades
+        for (int i = 0; i < Controller.controller.gameData.clickUpgradeLevel.Count; i++)
         {
             Upgrades upgrade = Instantiate(clickUpgradePrefab, clickUpgradesPanel);
             upgrade.UpgradeID = i;
@@ -69,7 +95,8 @@ public class UpgradesManager : MonoBehaviour
             clickUpgrades.Add(upgrade);
         }
 
-        for (int i = 0; i < Controller.instance.gameData.productionUpgradeLevel.Count; i++)
+        // Instantiate production upgrades
+        for (int i = 0; i < Controller.controller.gameData.productionUpgradeLevel.Count; i++)
         {
             Upgrades upgrade = Instantiate(productionUpgradesPrefab, productionUpgradesPanel);
             upgrade.UpgradeID = i;
@@ -80,82 +107,116 @@ public class UpgradesManager : MonoBehaviour
         clickUpgradesScroll.normalizedPosition = new Vector2(x: 0, y: 0);
         productionUpgradesScroll.normalizedPosition = new Vector2(x: 0, y: 0);
         UpdateUpgradeUI("click");
-        UpdateUpgradeUI(type:"production");
+        UpdateUpgradeUI(type: "production");
     }
 
-    public void Update() // Reveals upgrades when you hit certain thresholds 
+    public void Update()
+    {   
+        UpdateUpgradesAppearance(clickUpgradesUnlocked, clickUpgradesAppeared, clickUpgrades, showCustomText: false);  
+        UpdateUpgradesAppearance(productionUpgradesUnlocked, productionUpgradesAppeared, productionUpgrades, showCustomText: true);
+    }
+
+    private void UpdateUpgradesAppearance(double[] thresholds, bool[] appearedArray, List<Upgrades> upgrades, bool showCustomText)
     {
-        for (var i = 0; i < clickUpgrades.Count; i++)
-            if (!clickUpgrades[i].gameObject.activeSelf) 
-                clickUpgrades[i].gameObject.SetActive(Controller.instance.gameData.currency >= clickUpgradesUnlocked[i]);
-        
-        for (var i = 0; i < productionUpgrades.Count; i++)
-            if (!productionUpgrades[i].gameObject.activeSelf) 
-                productionUpgrades[i].gameObject.SetActive(Controller.instance.gameData.currency >= productionUpgradesUnlocked[i]);
+        for (int i = 0; i < thresholds.Length; i++)
+        {
+            if (!appearedArray[i] && Controller.controller.gameData.currency >= thresholds[i])
+            {
+                appearedArray[i] = true;
+                upgrades[i].gameObject.SetActive(true);
+               
+                if (showCustomText && upgrades == productionUpgrades) 
+                {
+                    string customText = upgradePopupText[i];
+                    
+                    ShowUpgradePopup(upgrades[i].transform.position, customText);
+                }
+            }
+        }
+    }
+
+    private void ShowUpgradePopup(Vector3 position, string customText)
+    {
+        // Find the Homescreen GameObject
+        GameObject homeScreen = GameObject.Find("Homescreen");
+
+        RectTransform canvasRect = FindObjectOfType<Canvas>().GetComponent<RectTransform>();
     
+        Vector2 localPos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, position, Camera.main, out localPos);
+    
+        // Instantiate the popup as a child of the Homescreen GameObject
+        GameObject popup = Instantiate(upgradePopupPrefab, homeScreen.transform);
+        RectTransform popupRect = popup.GetComponent<RectTransform>();
+        popupRect.anchoredPosition = localPos;
+
+        UpgradePopup upgradePopup = popup.GetComponent<UpgradePopup>();
+        upgradePopup.SetCustomText(customText); 
+    
+        upgradePopup.DestroyPopup(15f); 
+        popup.transform.localPosition = new Vector2(0, -65);
     }
 
 
-    public void UpdateUpgradeUI(string type, int UpgradeID = -1)
+    public void UpdateUpgradeUI(string type, int upgradeID = -1)
     {
-
         switch (type)
         {
             case "click":
-                if (UpgradeID == -1)
-                    for (int i = 0; i < clickUpgrades.Count; i++) UpdateUI(clickUpgrades, Controller.instance.gameData.clickUpgradeLevel, clickUpgradeName, i);
-                else UpdateUI(clickUpgrades, Controller.instance.gameData.clickUpgradeLevel, clickUpgradeName, UpgradeID);
+                if (upgradeID == -1)
+                    for (int i = 0; i < clickUpgrades.Count; i++) UpdateUI(clickUpgrades, Controller.controller.gameData.clickUpgradeLevel, clickUpgradeName, i);
+                else UpdateUI(clickUpgrades, Controller.controller.gameData.clickUpgradeLevel, clickUpgradeName, upgradeID);
                 break;
             case "production":
-                if (UpgradeID == -1)
-                    for (int i = 0; i < productionUpgrades.Count; i++) UpdateUI(productionUpgrades, Controller.instance.gameData.productionUpgradeLevel, productionUpgradeName, i);
-                else UpdateUI(productionUpgrades, Controller.instance.gameData.productionUpgradeLevel, productionUpgradeName, UpgradeID);
+                if (upgradeID == -1)
+                    for (int i = 0; i < productionUpgrades.Count; i++) UpdateUI(productionUpgrades, Controller.controller.gameData.productionUpgradeLevel, productionUpgradeName, i);
+                else UpdateUI(productionUpgrades, Controller.controller.gameData.productionUpgradeLevel, productionUpgradeName, upgradeID);
                 break;
         }
         void UpdateUI(List<Upgrades> upgrades, List<int> upgradeLevels, string[] upgradeNames, int ID)
         {
             upgrades[ID].LevelText.text = upgradeLevels[ID].ToString();
-            upgrades[ID].CostText.text = $"Cost {UpgradeCost(type, ID):F2} Currency";
+            upgrades[ID].CostText.text = $"Req {UpgradeCost(type, ID):F0} Infected Devices";
             upgrades[ID].NameText.text = upgradeNames[ID];
+            if (upgrades == productionUpgrades) 
+                upgrades[ID].TitleText.text = upgradeTitles[ID];
         }
     }
 
-    public double UpgradeCost(string type, int UpgradeID)
+    public double UpgradeCost(string type, int upgradeID)
     {
-        var data = Controller.instance.gameData; // to help shorten code length
+        var data = Controller.controller.gameData; // to help shorten code length
 
         switch (type)
         {
             case "click":
-                return clickUpgradeBaseCost[UpgradeID] *
-                       Math.Pow(clickUpgradeCostMulti[UpgradeID], data.clickUpgradeLevel[UpgradeID]);
+                return clickUpgradeBaseCost[upgradeID] *
+                       Math.Pow(clickUpgradeCostMulti[upgradeID], data.clickUpgradeLevel[upgradeID]);
             case "production":
-                return productionUpgradeBaseCost[UpgradeID] *
-                       Math.Pow(productionUpgradeCostMulti[UpgradeID], data.productionUpgradeLevel[UpgradeID]);
+                return productionUpgradeBaseCost[upgradeID] *
+                       Math.Pow(productionUpgradeCostMulti[upgradeID], data.productionUpgradeLevel[upgradeID]);
         }
 
         return 0;
     }
-    //public double Cost() => clickUpgradeBaseCost * (double)clickUpgradeCostMulti * Controller.instance.gameData.clickUpgradeLevel;
-    
-    public void BuyUpgrade(string type, int UpgradeID)
+
+    public void BuyUpgrade(string type, int upgradeID)
     {
-        
         switch (type)
         {
-            case "click": Buy(Controller.instance.gameData.clickUpgradeLevel);
+            case "click": Buy(Controller.controller.gameData.clickUpgradeLevel);
                 break;
-            case "production": Buy(Controller.instance.gameData.productionUpgradeLevel);
+            case "production": Buy(Controller.controller.gameData.productionUpgradeLevel);
                 break;
         }
         void Buy(List<int> upgradeLevels)
         {
-            if (Controller.instance.gameData.currency >= UpgradeCost(type, UpgradeID))
+            if (Controller.controller.gameData.currency >= UpgradeCost(type, upgradeID))
             {
-                Controller.instance.gameData.currency -= UpgradeCost(type, UpgradeID);
-                upgradeLevels[UpgradeID] += 1;
+                Controller.controller.gameData.currency -= UpgradeCost(type, upgradeID);
+                upgradeLevels[upgradeID] += 1;
             }
-            UpdateUpgradeUI(type, UpgradeID);
+            UpdateUpgradeUI(type, upgradeID);
         }
     }
 }

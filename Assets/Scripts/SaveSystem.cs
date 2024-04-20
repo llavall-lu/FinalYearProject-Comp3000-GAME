@@ -124,14 +124,14 @@ public class SaveSystem : MonoBehaviour
             writer.Close();
         }
 
-        Controller.instance.gameData = SaveExists(FileName: FilePath)
+        Controller.controller.gameData = SaveExists(FileName: FilePath)
             ? SaveSystem.LoadData<GameData>(fileName: FilePath)
             : new GameData();
     }
 
     public void Export()
     {
-        Controller.instance.Save();
+        Controller.controller.Save();
         Directory.CreateDirectory(SavePath);
 
         using (StreamReader reader = new StreamReader(path: SavePath + FilePath + FileType))
@@ -151,7 +151,7 @@ public class SaveSystem : MonoBehaviour
         if (ExportField.text == "") return;
         
         #if UNITY_WEBGL
-            GUIUtility.systemCopyBuffer = ExportField.text;
+            GUIUtility.systemCopyBuffer = ExportFieldWebGL.text;
             CopyButton.color = Color.gray;
             CopyButtonText.text = "Copied";
         #else
@@ -165,13 +165,13 @@ public class SaveSystem : MonoBehaviour
     public void Paste()
     {
         #if UNITY_WEBGL
-            GUIUtility.systemCopyBuffer = ExportField.text;
+            GUIUtility.systemCopyBuffer = ImportFieldWebGL.text;
             CopyButton.color = Color.gray;
-            CopyButtonText.text = "Copied";
+            CopyButtonText.text = "Pasted";
         #else
-            GUIUtility.systemCopyBuffer = ExportField.text;
-            CopyButton.color = Color.gray;
-            CopyButtonText.text = "Copied";
+            ImportField.text = GUIUtility.systemCopyBuffer;
+            PasteButton.color = Color.gray;
+            PasteButtonText.text = "Pasted";
         #endif
         StartCoroutine(CopyPasteButtonNormal());
     }
