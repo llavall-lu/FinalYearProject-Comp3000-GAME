@@ -8,6 +8,7 @@ using System.Linq;
 public class GameData
 {
     public double currency;
+    public double information;
 
     public List<int> clickUpgradeLevel;
     public List<int> productionUpgradeLevel;
@@ -17,6 +18,7 @@ public class GameData
     public GameData()
     {
         currency = 0;
+        information = 0;
         
         clickUpgradeLevel = new int[4].ToList();
         //clickUpgradeLevel = Methods.CreateList<double>(capacity: 4);

@@ -44,6 +44,8 @@ public class UpgradesManager : MonoBehaviour
         Methods.UpgradeCheck(Controller.controller.gameData.clickUpgradeLevel, length: 4);
 
         clickUpgradeName = new[] { "Infect Device +1", "Infect Device +5", "Infect Device +10", "Infect Device +20" };
+        
+        
         productionUpgradeName = new[]
         {
             "+1 Infected Devices/s",
@@ -83,7 +85,7 @@ public class UpgradesManager : MonoBehaviour
         productionUpgradeBaseCost = new double[] { 25, 100, 500, 2000, 10000 }; 
         productionUpgradeCostMulti = new double[] { 1.5, 1.75, 2.2, 2.8, 3.5 }; 
         productionUpgradesBasePower = new double[] { 1, 3, 7, 15, 30 }; 
-        productionUpgradesUnlocked = new double[] { 50, 500, 1500, 5000, 20000 }; // Thresholds to unlock upgrades
+        productionUpgradesUnlocked = new double[] { 250, 750, 2000, 5000, 20000 }; // Thresholds to unlock upgrades
         productionUpgradesAppeared = new bool[productionUpgradeName.Length];
     
         // Instantiate click upgrades
@@ -137,8 +139,8 @@ public class UpgradesManager : MonoBehaviour
 
     private void ShowUpgradePopup(Vector3 position, string customText)
     {
-        // Find the Homescreen GameObject
-        GameObject homeScreen = GameObject.Find("Homescreen");
+        
+        GameObject popupsPanel = GameObject.Find("PopupsPanel");
 
         RectTransform canvasRect = FindObjectOfType<Canvas>().GetComponent<RectTransform>();
     
@@ -146,7 +148,7 @@ public class UpgradesManager : MonoBehaviour
         RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, position, Camera.main, out localPos);
     
         // Instantiate the popup as a child of the Homescreen GameObject
-        GameObject popup = Instantiate(upgradePopupPrefab, homeScreen.transform);
+        GameObject popup = Instantiate(upgradePopupPrefab, popupsPanel.transform);
         RectTransform popupRect = popup.GetComponent<RectTransform>();
         popupRect.anchoredPosition = localPos;
 
@@ -154,7 +156,7 @@ public class UpgradesManager : MonoBehaviour
         upgradePopup.SetCustomText(customText); 
     
         upgradePopup.DestroyPopup(15f); 
-        popup.transform.localPosition = new Vector2(0, -65);
+        popup.transform.localPosition = new Vector2(0, 0);
     }
 
 
@@ -218,5 +220,27 @@ public class UpgradesManager : MonoBehaviour
             }
             UpdateUpgradeUI(type, upgradeID);
         }
+    }
+
+    public void BuyMax()
+    {
+        var data = Controller.controller.gameData;
+
+        for (int i = 0; i < data.clickUpgradeLevel.Count; i++)
+        {
+            List<int> clickUpgradeLevelList = new List<int> { data.clickUpgradeLevel[i] };
+            Methods.BuyMax(ref data.currency, clickUpgradeBaseCost[i], (float)clickUpgradeCostMulti[i], ref clickUpgradeLevelList, 0);
+            data.clickUpgradeLevel[i] = clickUpgradeLevelList[0];
+        }
+
+        for (int i = 0; i < data.productionUpgradeLevel.Count; i++)
+        {
+            List<int> productionUpgradeLevelList = new List<int> { data.productionUpgradeLevel[i] };
+            Methods.BuyMax(ref data.currency, productionUpgradeBaseCost[i], (float)productionUpgradeCostMulti[i], ref productionUpgradeLevelList, 0);
+            data.productionUpgradeLevel[i] = productionUpgradeLevelList[0];
+        }
+
+        UpdateUpgradeUI("click");
+        UpdateUpgradeUI("production");
     }
 }

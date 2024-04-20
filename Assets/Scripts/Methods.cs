@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Mathematics;
 using UnityEngine;
 
 public static class Methods
@@ -35,5 +36,25 @@ public static class Methods
             list = new T[length].ToList();
         }
     }
+
+    public static double Cost(double baseCost, float costMult, int level) =>
+        baseCost * Math.Pow(costMult, level);
+    public static void BuyMax(ref double currency, double baseCost, float costMult, ref int level)
+    {
+        int n = (int)Math.Floor(Math.Log(currency * (costMult - 1) / Cost(baseCost, costMult, level) + 1, costMult));
+        double cost = Cost(baseCost, costMult, level) * ((Math.Pow(costMult, n) - 1) / (costMult - 1));
         
+        if (currency < cost) return;
+        currency -= cost;
+        level += n;
+    }
+    public static void BuyMax(ref double currency, double baseCost, float costMult, ref List<int> level, int i)
+    {
+        int n = (int)Math.Floor(Math.Log(currency * (costMult - 1) / Cost(baseCost, costMult, level[i]) + 1, costMult));
+        double cost = Cost(baseCost, costMult, level[i]) * ((Math.Pow(costMult, n) - 1) / (costMult - 1));
+        
+        if (currency < cost) return;
+        currency -= cost;
+        level[i] += n;
+    }
 }

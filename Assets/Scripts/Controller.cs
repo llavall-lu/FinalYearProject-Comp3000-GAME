@@ -24,7 +24,7 @@ public class Controller : MonoBehaviour
             total += upgradeManager.clickUpgradesBasePower[i] * gameData.clickUpgradeLevel[i];
         }
 
-        return total;
+        return total * PrestigeManager.prestigeManager.PrestigeEffect();
     }
     
     public double CurrencyPerSecond()
@@ -35,7 +35,7 @@ public class Controller : MonoBehaviour
             total += upgradeManager.productionUpgradesBasePower[i] * gameData.productionUpgradeLevel[i];
         }
 
-        return total;
+        return total * PrestigeManager.prestigeManager.PrestigeEffect();
     }
 
     private const string dataFileName = "PlayerData_KyberConquest";
@@ -53,9 +53,9 @@ public class Controller : MonoBehaviour
     public float SaveTime;
     private void Update()
         {
-            currencyText.text = $"{gameData.currency:F0} Infected Devices";
-            currencyClickPowerText.text = $"+{ClickPower()} Infected Devices";
-            currencyPerSecond.text = $"{CurrencyPerSecond():F0}/s";
+            currencyText.text = $"{gameData.currency:F1} Infected Devices";
+            currencyClickPowerText.text = $"+{ClickPower():F2} Infected Devices";
+            currencyPerSecond.text = $"{CurrencyPerSecond():F2}/s";
             // using interpolation to clean up messy code
 
             Controller.controller.gameData.currency += CurrencyPerSecond() * Time.deltaTime;
