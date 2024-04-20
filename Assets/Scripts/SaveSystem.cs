@@ -2,13 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Windows;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using TMPro;
 using UnityEngine.UI;
-using Directory = System.IO.Directory;
-using File = UnityEngine.Windows.File;
 
 public class SaveSystem : MonoBehaviour
 {
@@ -165,16 +162,17 @@ public class SaveSystem : MonoBehaviour
     public void Paste()
     {
         #if UNITY_WEBGL
-            GUIUtility.systemCopyBuffer = ImportFieldWebGL.text;
-            CopyButton.color = Color.gray;
-            CopyButtonText.text = "Pasted";
+                ImportFieldWebGL.text = GUIUtility.systemCopyBuffer;
+                PasteButton.color = Color.gray;
+                PasteButtonText.text = "Pasted";
         #else
-            ImportField.text = GUIUtility.systemCopyBuffer;
-            PasteButton.color = Color.gray;
-            PasteButtonText.text = "Pasted";
+                ImportField.text = GUIUtility.systemCopyBuffer;
+                PasteButton.color = Color.gray;
+                PasteButtonText.text = "Pasted";
         #endif
         StartCoroutine(CopyPasteButtonNormal());
     }
+
 
     public void Clear(string type)
     {
